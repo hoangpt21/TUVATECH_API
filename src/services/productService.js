@@ -141,7 +141,7 @@ const get_recommendation_products = async (userId) => {
             if (productIds.length > 0) {
                 suggestProducts = await Promise.all(productIds.map(productId => productModel.list_products_by_conditions(productId, ['*'], [{ name: "product_id" }])));
                 suggestProducts = suggestProducts?.flat()?.slice(0, 4);
-            }
+            } else suggestProducts = [];
         }
         return suggestProducts;
     }   
