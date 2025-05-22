@@ -1,7 +1,5 @@
 import cloudinary from "cloudinary"
 import { env } from "../config/environment"
-import ApiError from "../utils/ApiError";
-import { StatusCodes } from "http-status-codes";
 
 const cloudinaryV2 = cloudinary.v2;
 cloudinaryV2.config({
