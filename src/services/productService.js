@@ -131,22 +131,17 @@ const filter_products = async (filters, selectedColumns = ['*'], limit = 50, off
 
 const get_recommendation_products = async (userId) => {
     try {
-        const allProducts = await productModel.list_all_products();
-        let suggestProducts = allProducts
-            .filter(product => product.avg_rating > 0)
-            .sort((a, b) => b.avg_rating - a.avg_rating)
-            .slice(0, 4);
+        let suggestProducts = []
         if (userId !== 'popular') {
             const productIds = await recommendForUser(parseInt(userId));
             if (productIds.length > 0) {
                 suggestProducts = await Promise.all(productIds.map(productId => productModel.list_products_by_conditions(productId, ['*'], [{ name: "product_id" }])));
                 suggestProducts = suggestProducts?.flat()?.slice(0, 4);
-            } else suggestProducts = [];
+            }
         }
         return suggestProducts;
     }   
     catch (error) {
-        console.log(error);
         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Lỗi khi lấy danh sách sản phẩm gợi ý");
     }
 }
