@@ -106,6 +106,7 @@ const add_to_cart = async (cartData, operator) => {
 
 const remove_from_cart = async (userId, productId, isOrdered) => {
     try {
+        console.log("Removing from cart", userId, productId, isOrdered);
         const [[existingProduct],[existingItem]] = await Promise.all([ 
             !isOrdered? productModel .list_products_by_conditions(
                 [productId],

@@ -9,7 +9,8 @@ const ORDER_ITEM_TABLE_SCHEMA = Joi.object({
     quantity: Joi.number().integer().required().default(0), // Default 0, required
     subtotal_price: Joi.number().precision(2).required(), // Renamed from price
     product_name: Joi.string().max(255).allow(null), // Snapshot
-    thumbnail: Joi.string().allow(null) // Snapshot (TEXT maps to string)
+    thumbnail: Joi.string().allow(null), // Snapshot (TEXT maps to string)
+    price: Joi.number().precision(2).required(), // Renamed from unit_price
 });
 
 const validateBeforeCreateOrderItem = async (data) => {

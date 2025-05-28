@@ -70,6 +70,7 @@ const update_order_status = async (orderId, newStatus, adminId, selectedColumns 
             ["*"],
             [{ name: "order_id" }]
         );
+        const getDateTime = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
 
         if (!existingOrder) {
             throw new ApiError(StatusCodes.NOT_FOUND, "Không tìm thấy đơn hàng hoặc bạn không có quyền cập nhật");
@@ -77,20 +78,20 @@ const update_order_status = async (orderId, newStatus, adminId, selectedColumns 
 
         if(newStatus === "cancelled" && existingOrder.payment_status === "paid") {
             await orderModel.update_an_order(
-                [newStatus,'refund', orderId], 
-                ["status","payment_status"],    
+                [newStatus,'refund', getDateTime(), orderId], 
+                ["status","payment_status", "updated_at"],    
                 [{ name: "order_id" }]
             );
         } else{
             if(newStatus === "delivered" && existingOrder.payment_status === "pending") {
                 await orderModel.update_an_order(
-                    [newStatus,'paid', orderId], 
-                    ["status","payment_status"],    
+                    [newStatus,'paid', getDateTime(), getDateTime(), orderId], 
+                    ["status","payment_status", "payment_date", "updated_at"],    
                     [{ name: "order_id" }]
                 );
             } else await orderModel.update_an_order(
-                [newStatus, orderId], 
-                ["status"],    
+                [newStatus, getDateTime(), orderId], 
+                ["status", "updated_at"],    
                 [{ name: "order_id" }]
             ); 
             const orderLink = existingOrder.user_id === adminId ?
@@ -117,7 +118,7 @@ const update_order_status = async (orderId, newStatus, adminId, selectedColumns 
                     <div style="text-align:center; margin-bottom: 24px;">
                       <img src="https://img.icons8.com/color/96/000000/checked--v2.png" alt="success" style="width:80px; margin-bottom: 12px;" />
                       <h2 style="margin: 0 0 8px 0; font-size: 28px; color: #222;">Đặt hàng thành công</h2>
-                      <p style="color: #444; font-size: 16px;">Cảm ơn bạn đã đặt hàng, chúng tôi sẽ gửi sản phẩm đến bạn trong thời gian ngắn nhất.</p>
+                      <p style="color: #444; font-size: 16px;">Cảm ơn bạn đã tin tưởng và mua hàng tại TuvaTech. Đơn hàng của bạn đã được giao thành công!</p>
                     </div>
                     <div style="text-align: center; margin: 20px 0;">
                       <a href="${orderLink}" 
@@ -156,23 +157,23 @@ const update_order_status = async (orderId, newStatus, adminId, selectedColumns 
                       <div style="border-top:1px solid #eee; margin:12px 0;"></div>
                       <div style="display:flex; justify-content:space-between; font-size:15px; margin-bottom:4px">
                         <span>Tổng tiền sản phẩm:</span>
-                        <span style="font-weight:600;">${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(Number(existingOrder.total_price) + Number(existingOrder.discount_amount) - Number(existingOrder.shipping_fee))}</span>
+                        <span style="font-weight:600; margin-left: 5px"> ${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(Number(existingOrder.total_price) + Number(existingOrder.discount_amount) - Number(existingOrder.shipping_fee))}</span>
                       </div>
                       <div style="display:flex; justify-content:space-between; font-size:15px; margin-bottom:4px">
                         <span>Phí vận chuyển:</span>
-                        <span style="font-weight:600;">${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.shipping_fee)}</span>
+                        <span style="font-weight:600; margin-left: 5px"> ${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.shipping_fee)}</span>
                       </div>
                       <div style="display:flex; justify-content:space-between; font-size:15px; margin-bottom:4px">
                         <span>Giảm giá:</span>
-                        <span style="font-weight:600;">${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.discount_amount  || 0)}</span>
+                        <span style="font-weight:600; margin-left: 5px"> ${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.discount_amount  || 0)}</span>
                       </div>
                       <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:700; margin-top:8px; margin-bottom:4px">
                         <span>Tổng thanh toán:</span>
-                        <span>${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.total_price)}</span>
+                        <span style="margin-left: 5px"> ${new Intl.NumberFormat('vi-VN', {style: 'currency',currency: 'VND'}).format(existingOrder.total_price)}</span>
                       </div>
                       <div style="display:flex; justify-content:space-between; font-size:15px; margin-top:4px;">
                         <span>Trạng thái:</span>
-                        <span style="color: ${paymentStatuses[existingOrder?.payment_status].color}; font-weight:600;">${paymentStatuses[existingOrder?.payment_status].text}</span>
+                        <span style="color: ${paymentStatuses[existingOrder?.payment_status].color}; font-weight:600; margin-left: 5px"> ${paymentStatuses[existingOrder?.payment_status].text}</span>
                       </div>
                     </div>
                     <div style="font-size:15px; margin-bottom: 8px;">
@@ -211,7 +212,6 @@ const update_order_status = async (orderId, newStatus, adminId, selectedColumns 
 
         return updatedOrder;
     } catch (error) {
-        console.error("Error updating order:", error);
         if (error instanceof ApiError) throw error;
         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Lỗi khi cập nhật trạng thái đơn hàng");
     }

@@ -74,7 +74,6 @@ const create_a_coupon = async (req, res, next) => {
 
 const update_a_coupon = async (req, res, next) => {
     try {
-        if(req.jwtDecoded?.role !== 'admin') next(new ApiError(StatusCodes.FORBIDDEN, 'Bạn không có quyền truy cập vào tài nguyên này'));
         const { id } = req.params;
         const updateData = req.body;
         const updatedCoupon = await couponService.update_a_coupon(id, updateData);

@@ -44,8 +44,9 @@ const checkPayment = async (req, res, next) => {
         const orderId = orderInfo? orderInfo.split(" ")[orderInfo.split(" ").length-1]: vnp_TxnRef;
         const isSuccess = ckeck;
         const statusPayment = isSuccess? "paid" : "failed";
+        const getDateTime = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
         await orderModel.update_an_order(
-            [statusPayment, (new Date()).toLocaleDateString('en-CA'), parseInt(orderId)],
+            [statusPayment, getDateTime(), parseInt(orderId)],
             ["payment_status","payment_date"],
             [{name: "order_id"}],
         )
